@@ -26,11 +26,14 @@ import org.bukkit.conversations.*;
  */
 public class Knocker extends JavaPlugin{
 
-
+    private ArenaManger arenaManager;
    public static final Logger LOG = Logger.getLogger("Knocker"); 
     private final String PREFIX="KNO";
 
-
+    @Override
+    public void onEnable() {
+        arenaManager = new ArenaManger();
+    }
    @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if(cmd.getName().equalsIgnoreCase("knocker")) {
@@ -50,24 +53,63 @@ public class Knocker extends JavaPlugin{
                 return true;
             }
             if(args[0].equalsIgnoreCase("add")) {
+                if(args.length == 1) {
+                    sender.sendMessage(PREFIX + ChatColor.RED + "Use /pvpgame add <Name>");
+                    return true;
+                }
+                String name = args[1];
+                if(arenaManager.exists(name)) {
+                    sender.sendMessage(PREFIX + ChatColor.RED + "That arena already exists!");
+                    return true;
+                }
+                arenaManager.registerArena(name, null, null);
                 sender.sendMessage(ChatColor.GOLD + "Arena created.");
                 return true;
             }
             if(args[0].equalsIgnoreCase("remove")) {
+                if(args.length == 1) {
+                    sender.sendMessage(PREFIX + ChatColor.RED + "Use /pvpgame remove <Name>");
+                    return true;
+                }
+                String name = args[1];
+                if(!arenaManager.exists(name)) {
+                    sender.sendMessage(PREFIX + ChatColor.RED + "That arena doesn't exist!");
+                    return true;
+                }
+                arenaManager.remove(name);
                 sender.sendMessage(ChatColor.GOLD + "Arena removed.");
                 return true;
             }
             if(args[0].equalsIgnoreCase("setspawn")) {
+                if(!(sender instanceof Player)) {
+                    sender.sendMessage(PREFIX + ChatColor.RED + "This command can only be used by players.");
+                    return true;
+                }
+                String name = args[1];
+                if(!arenaManager.exists(name)) {
+                    sender.sendMessage(PREFIX + ChatColor.RED + "That arena doesn't exist!");
+                    return true;
+                }
+                arenaManager.getArena(name).setSpawnLocation(((Player) sender).getLocation());
                 sender.sendMessage(ChatColor.GOLD + "Spawn set.");
                 return true;
             }
             if(args[0].equalsIgnoreCase("setlobby")) {
+                if(!(sender instanceof Player)) {
+                    sender.sendMessage(PREFIX + ChatColor.RED + "This command can only be used by players.");
+                    return true;
+                }
+                String name = args[1];
+                if(!arenaManager.exists(name)) {
+                    sender.sendMessage(PREFIX + ChatColor.RED + "That arena doesn't exist!");
+                    return true;
+                }
+                arenaManager.getArena(name).setLobbyLocation(((Player) sender).getLocation());
                 sender.sendMessage(ChatColor.GOLD + "Lobby set.");
                 return true;
-            }
+            }return true;
+        }
             sender.sendMessage(PREFIX + ChatColor.RED + "Unknown subcommand. Use /pvpgame help for a list of commands.");
             return true;
-        }
-        return true;
     }
 }
